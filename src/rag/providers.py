@@ -3,23 +3,29 @@ from __future__ import annotations
 import os
 
 import weaviate
-from langchain_community.embeddings import DashScopeEmbeddings
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 
 
 def embeddings_from_env():
-    provider = os.getenv("EMBED_PROVIDER", "dashscope").lower()
+    # Embedding 提供方：ModelScope（默认）或 OpenAI
+    provider = os.getenv("EMBED_PROVIDER", "modelscope").lower()
     if provider == "openai":
         model = os.getenv("OPENAI_EMBED_MODEL", "text-embedding-3-large")
         return OpenAIEmbeddings(model=model)
 
-    # DashScope native embeddings (Tongyi/Qwen)
-    api_key = os.getenv("DASHSCOPE_API_KEY") or os.getenv("TONGYI_API_KEY")
-    model = os.getenv("DASHSCOPE_EMBED_MODEL", "text-embedding-v2")
-    return DashScopeEmbeddings(dashscope_api_key=api_key, model=model)
+    # ModelScope embeddings via OpenAI-compatible endpoint
+    api_key = os.getenv("MODELSCOPE_API_TOKEN")
+    base_url = os.getenv("MODELSCOPE_BASE_URL", "https://api-inference.modelscope.cn/v1")
+    model = os.getenv("MODELSCOPE_EMBED_MODEL")
+    if not api_key or not model:
+        raise ValueError(
+            "MODELSCOPE_API_TOKEN and MODELSCOPE_EMBED_MODEL are required"
+        )
+    return OpenAIEmbeddings(api_key=api_key, base_url=base_url, model=model)
 
 
 def llm_from_env():
+    # LLM 提供方：DeepSeek（默认）或 OpenAI
     provider = os.getenv("LLM_PROVIDER", "deepseek").lower()
     if provider == "openai":
         model = os.getenv("OPENAI_MODEL", "gpt-4.1-mini")
@@ -40,6 +46,7 @@ def llm_from_env():
 
 
 def weaviate_client_from_env():
+    # Weaviate 客户端（可选 API Key）
     url = os.getenv("WEAVIATE_URL", "http://localhost:8080")
     api_key = os.getenv("WEAVIATE_API_KEY")
     if api_key:

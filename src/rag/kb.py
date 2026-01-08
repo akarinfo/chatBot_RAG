@@ -18,6 +18,7 @@ class KBFile:
 
 
 def list_kb_files() -> List[KBFile]:
+    # 列出 data/ 下所有文件（用于 UI 展示）
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     files: List[KBFile] = []
     for path in sorted(DATA_DIR.rglob("*")):
@@ -29,6 +30,7 @@ def list_kb_files() -> List[KBFile]:
 
 
 def save_upload(filename: str, content: bytes) -> Path:
+    # 保存上传文件到 data/（仅保存，不入库）
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     safe_name = Path(filename).name
     target = DATA_DIR / safe_name
@@ -37,6 +39,7 @@ def save_upload(filename: str, content: bytes) -> Path:
 
 
 def delete_kb_file(name: str) -> None:
+    # 删除指定文件（限制在 data/ 目录内）
     target = (DATA_DIR / name).resolve()
     if DATA_DIR.resolve() not in target.parents:
         raise ValueError("Invalid file path")
@@ -45,6 +48,7 @@ def delete_kb_file(name: str) -> None:
 
 
 def clear_vectorstore() -> None:
+    # 删除 Weaviate 指定类（用于重建索引）
     try:
         from .providers import weaviate_client_from_env
     except ImportError:

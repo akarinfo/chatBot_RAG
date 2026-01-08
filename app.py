@@ -7,6 +7,7 @@ from pathlib import Path
 import streamlit as st
 from langchain_core.messages import AIMessage, HumanMessage
 
+# 允许从项目根目录直接运行 app.py
 sys.path.insert(0, str(Path(__file__).resolve().parent / "src"))
 
 from rag.ingest import ingest  # noqa: E402
@@ -24,10 +25,12 @@ def _rag():
 
 
 def _reset_rag_cache():
+    # 重新入库后需要重建 retriever/LLM 等资源
     _rag.clear()
 
 
 def sidebar_kb_manager():
+    # 左侧栏：文档管理 + 重新入库
     st.sidebar.header("知识库管理")
 
     uploaded = st.sidebar.file_uploader(
@@ -36,6 +39,7 @@ def sidebar_kb_manager():
         accept_multiple_files=True,
     )
     if uploaded and st.sidebar.button("保存上传文件"):
+        # 写入 data/ 目录（只保存，不会自动入库）
         for f in uploaded:
             save_upload(f.name, f.getvalue())
         st.sidebar.success("已保存到 data/（需要重新入库）")
@@ -57,6 +61,7 @@ def sidebar_kb_manager():
     if st.sidebar.button("重新入库（重建向量库）", type="primary"):
         with st.sidebar.status("正在入库...", expanded=True):
             try:
+                # 入库会调用 embedding API 并写入 Weaviate
                 ingest()
                 _reset_rag_cache()
                 st.sidebar.success("入库完成，可以开始提问了")
@@ -70,6 +75,7 @@ def main_chat():
     st.caption("流程：检索（Weaviate）→ 生成（DeepSeek LLM），回答只基于知识库上下文。")
 
     if "messages" not in st.session_state:
+        # 保存对话消息（LangChain BaseMessage）
         st.session_state.messages = []
 
     col1, col2 = st.columns([1, 1], vertical_alignment="center")
@@ -96,13 +102,14 @@ def main_chat():
     ask, ask_stream = _rag()
     with st.chat_message("assistant"):
         try:
+            # 优先使用流式输出
             def _gen():
                 for token in ask_stream(prompt, history=st.session_state.messages[:-1]):
                     yield token
 
             content = st.write_stream(_gen())
         except Exception:
-            # fallback to non-stream call
+            # 兼容不支持 stream 的情况
             ai = ask(prompt, history=st.session_state.messages[:-1])
             content = ai.content
             st.markdown(content)
@@ -111,6 +118,7 @@ def main_chat():
 
 
 def main():
+    # 页面整体布局：左侧管理，主区聊天
     sidebar_kb_manager()
     main_chat()
 

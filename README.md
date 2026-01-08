@@ -2,7 +2,25 @@
 
 Minimal Retrieval-Augmented Generation (RAG) chatbot built on the LangChain 1.x + LangGraph 1.x stack.
 
-中文说明见 `README.zh-CN.md`.
+中文说明见 `README.zh-CN.md`，新手上手指南见 `docs/PROJECT_GUIDE.zh-CN.md`.
+
+## Flowchart (Mermaid)
+
+```mermaid
+flowchart TD
+    A[Docs in data/] --> B[ingest.py<br/>Markdown header split + recursive chunks]
+    B --> C[ModelScope Embedding API]
+    C --> D[Weaviate Vector DB RAGChunk]
+
+    E[User Question] --> F[rag_graph.py<br/>retriever.invoke()]
+    F --> D
+    F --> G[Context + Prompt]
+    G --> H[DeepSeek LLM API]
+    H --> I[Answer]
+
+    J[Streamlit UI] --> E
+    J --> B
+```
 
 ## Prerequisites
 - Python 3.10+
@@ -26,13 +44,6 @@ This writes embeddings into a Weaviate class (default `RAGChunk`).
 Notes:
 - Markdown files are first split by headings (H1/H2/H3), then chunked with a recursive splitter.
 
-### Optional: local embeddings
-```bash
-export USE_LOCAL_EMBEDDER=1
-export LOCAL_EMBED_MODEL=sentence-transformers/all-MiniLM-L6-v2
-python src/rag/ingest.py
-```
-
 ## Run the chat loop
 ```bash
 python src/rag/rag_graph.py
@@ -50,11 +61,11 @@ streamlit run app.py
   - `LLM_PROVIDER=deepseek` with `DEEPSEEK_API_KEY`, optional `DEEPSEEK_MODEL`, `DEEPSEEK_TEMPERATURE`
   - or `LLM_PROVIDER=openai` with `OPENAI_API_KEY`, optional `OPENAI_MODEL`, `OPENAI_TEMPERATURE`
 - Embeddings (retrieval, API-only):
-  - `EMBED_PROVIDER=dashscope` with `DASHSCOPE_API_KEY`, optional `DASHSCOPE_EMBED_MODEL`
+  - `EMBED_PROVIDER=modelscope` with `MODELSCOPE_API_TOKEN`, `MODELSCOPE_BASE_URL`, `MODELSCOPE_EMBED_MODEL`
   - or `EMBED_PROVIDER=openai` with `OPENAI_API_KEY`, `OPENAI_EMBED_MODEL`
 - Vector DB:
   - `WEAVIATE_URL`, optional `WEAVIATE_API_KEY`, `WEAVIATE_CLASS`, `WEAVIATE_REBUILD`
 
 ## What’s inside
-- `src/rag/ingest.py`: loads files from `data/`, chunks them, and builds a Chroma vector store.
-- `src/rag/rag_graph.py`: LangGraph pipeline (retrieve → generate) with ChatOpenAI and the persisted retriever.
+- `src/rag/ingest.py`: loads files from `data/`, chunks them, and writes to Weaviate.
+- `src/rag/rag_graph.py`: LangGraph pipeline (retrieve → generate) with ChatOpenAI and Weaviate retriever.

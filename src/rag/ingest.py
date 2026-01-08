@@ -26,6 +26,7 @@ load_dotenv()
 
 
 def load_documents(data_dir: Path) -> List[Document]:
+    # 只读取指定后缀的文本/Markdown 文件
     allowed_suffixes = {".txt", ".md", ".mdx"}
     docs: List[Document] = []
     for path in data_dir.rglob("*"):
@@ -36,14 +37,17 @@ def load_documents(data_dir: Path) -> List[Document]:
 
 
 def select_embeddings():
+    # 通过环境变量选择 Embedding 提供方
     return embeddings_from_env()
 
 
 def ingest():
+    # 入库主流程：读文档 → 分块 → 向量化 → 写入 Weaviate
     docs = load_documents(DATA_DIR)
     if not docs:
         raise SystemExit(f"No documents found in {DATA_DIR}")
 
+    # Markdown 先按标题分块，再做递归分块
     header_splitter = MarkdownHeaderTextSplitter(
         headers_to_split_on=[("#", "h1"), ("##", "h2"), ("###", "h3")]
     )
@@ -60,6 +64,7 @@ def ingest():
         else:
             chunks.extend(splitter.split_documents([doc]))
 
+    # 写入 Weaviate（可通过环境变量控制类名与是否重建）
     embeddings = select_embeddings()
     client = weaviate_client_from_env()
     class_name = os.getenv("WEAVIATE_CLASS", "RAGChunk")

@@ -27,6 +27,7 @@ class RAGState(TypedDict):
 
 
 def format_docs(docs: List[Document]) -> str:
+    # 将检索到的文档拼成模型可读的上下文文本
     return "\n\n".join(
         f"Source: {doc.metadata.get('source', 'unknown')}\n{doc.page_content}"
         for doc in docs
@@ -34,6 +35,7 @@ def format_docs(docs: List[Document]) -> str:
 
 
 def build_retriever():
+    # 构建 Weaviate 检索器（使用同一 Embedding 模型）
     embeddings = embeddings_from_env()
     client = weaviate_client_from_env()
     class_name = os.getenv("WEAVIATE_CLASS", "RAGChunk")
@@ -51,10 +53,12 @@ def build_retriever():
 
 
 def build_llm():
+    # 根据环境变量创建 LLM 实例
     return llm_from_env()
 
 
 def build_prompt():
+    # 约束模型必须基于上下文回答
     return ChatPromptTemplate.from_messages(
         [
             (
@@ -70,17 +74,20 @@ def build_prompt():
 
 
 def build_graph():
+    # LangGraph：retrieve → generate
     retriever = build_retriever()
     llm = build_llm()
     prompt = build_prompt()
     rag_chain = prompt | llm
 
     def retrieve(state: RAGState):
+        # 取用户最后一句作为检索 query
         question = state["messages"][-1].content
-        docs = retriever.get_relevant_documents(question)
+        docs = retriever.invoke(question)
         return {"context": docs}
 
     def generate(state: RAGState):
+        # 用检索到的上下文调用 LLM
         question = state["messages"][-1].content
         context = format_docs(state.get("context", []))
         ai_msg: AIMessage = rag_chain.invoke({"context": context, "question": question})
@@ -97,13 +104,15 @@ def build_graph():
     app = graph.compile()
 
     def ask(question: str, history: List[BaseMessage] | None = None) -> AIMessage:
+        # 直接调用图执行一次完整的 RAG
         history = history or []
         state: RAGState = {"messages": history + [HumanMessage(content=question)]}
         result = app.invoke(state)
         return result["messages"][-1]
 
     def ask_stream(question: str, history: List[BaseMessage] | None = None):
-        docs = retriever.get_relevant_documents(question)
+        # 只做检索并流式生成（用于 Web UI）
+        docs = retriever.invoke(question)
         context = format_docs(docs)
         stream = rag_chain.stream({"context": context, "question": question})
         for chunk in stream:

@@ -6,6 +6,28 @@
 
 适合你先跑通一条“从文档到可问答”的最短链路，然后再按需扩展（支持 PDF/Word、Web UI、多轮对话、权限、多知识库等）。
 
+新手上手指南：`docs/PROJECT_GUIDE.zh-CN.md`
+
+---
+
+## 流程图（Mermaid）
+
+```mermaid
+flowchart TD
+    A[用户文档 data/] --> B[ingest.py<br/>Markdown 结构化分块 + 递归分块]
+    B --> C[ModelScope Embedding API]
+    C --> D[Weaviate 向量库 RAGChunk]
+
+    E[用户提问] --> F[rag_graph.py<br/>retriever.invoke()]
+    F --> D
+    F --> G[拼接上下文 + Prompt]
+    G --> H[DeepSeek LLM API]
+    H --> I[回答输出]
+
+    J[Streamlit UI] --> E
+    J --> B
+```
+
 ---
 
 ## 目录结构
@@ -22,7 +44,7 @@
 - Python 3.10+
 - LLM（大模型）默认使用 **DeepSeek**（OpenAI 兼容接口），需要 `DEEPSEEK_API_KEY`
 - Embeddings（向量嵌入，用于检索）**只走 API**：
-  1) **DashScope 原生 Embedding**（通义/Qwen）：需要 `DASHSCOPE_API_KEY`
+  1) **ModelScope Embeddings（OpenAI 兼容接口）**：需要 `MODELSCOPE_API_TOKEN`、`MODELSCOPE_BASE_URL`、`MODELSCOPE_EMBED_MODEL`
   2) **OpenAI Embeddings**：需要 `OPENAI_API_KEY`
 
 ---
@@ -51,8 +73,8 @@ cp .env.example .env
 你也可以按需修改（仅 API 方式）：
 - `DEEPSEEK_MODEL`：默认 `deepseek-chat`
 - `DEEPSEEK_TEMPERATURE`：默认 `0.2`
-- `EMBED_PROVIDER`：默认 `dashscope`
-- `DASHSCOPE_EMBED_MODEL`（默认 `text-embedding-v2`）
+- `EMBED_PROVIDER`：默认 `modelscope`
+- `MODELSCOPE_API_TOKEN`、`MODELSCOPE_BASE_URL`、`MODELSCOPE_EMBED_MODEL`（例如 `Qwen/Qwen3-Embedding-8B`）
 此外还需配置 Weaviate：
 - `WEAVIATE_URL`（例如 `http://localhost:8080`）
 - `WEAVIATE_API_KEY`（如有）
@@ -118,6 +140,21 @@ streamlit run app.py
 你将获得一个网页界面：
 - 左侧栏：上传/删除 `data/` 里的文档，并一键“重新入库（重建向量库）”
 - 主界面：聊天问答，默认会尝试流式输出（边生成边显示）
+
+---
+
+## Weaviate 安装（Docker Compose）
+
+在项目根目录运行：
+```bash
+docker compose up -d
+```
+
+健康检查：
+```bash
+curl http://localhost:8080/v1/.well-known/ready
+```
+返回 `true` 即可。
 
 ---
 
