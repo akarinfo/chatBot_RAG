@@ -90,6 +90,12 @@ Copy the returned `api_key`.
   - or `EMBED_PROVIDER=openai` with `OPENAI_API_KEY`, `OPENAI_EMBED_MODEL`
 - Vector DB:
   - `WEAVIATE_URL`, optional `WEAVIATE_API_KEY`, `WEAVIATE_CLASS`, `WEAVIATE_REBUILD`
+- Database (PostgreSQL):
+  - `DATABASE_URL=postgresql+psycopg2://postgres:postgres@localhost:5432/chatbot_rag`
+  - Run schema migration: `alembic upgrade head`
+  - Auto-create tables (dev only): `APP_AUTO_CREATE_SCHEMA=1`
+  - Optional pool tuning: `APP_DB_POOL_SIZE`, `APP_DB_MAX_OVERFLOW`, `APP_DB_POOL_RECYCLE`
+  - Department bootstrap: `APP_DEFAULT_DEPARTMENT` (default `default`)
 
 ## What’s inside
 - `src/services/ingest/processor.py`: loads files from `data/`, chunks them, and writes to Weaviate.

@@ -1,6 +1,19 @@
 version: "3.9"
 
 services:
+  postgres:
+    image: postgres:16
+    container_name: chatbot_postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
+      POSTGRES_DB: "chatbot_rag"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
   weaviate:
     image: semitechnologies/weaviate:1.25.3
     container_name: weaviate
@@ -17,4 +30,5 @@ services:
     restart: unless-stopped
 
 volumes:
+  postgres_data:
   weaviate_data:

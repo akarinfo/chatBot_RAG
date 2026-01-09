@@ -78,6 +78,12 @@ cp .env.example .env
 此外还需配置 Weaviate：
 - `WEAVIATE_URL`（例如 `http://localhost:8080`）
 - `WEAVIATE_API_KEY`（如有）
+以及 PostgreSQL：
+- `DATABASE_URL=postgresql+psycopg2://postgres:postgres@localhost:5432/chatbot_rag`
+- 初始化/升级表结构：`alembic upgrade head`
+- 开发环境自动建表：`APP_AUTO_CREATE_SCHEMA=1`
+- 连接池参数：`APP_DB_POOL_SIZE`、`APP_DB_MAX_OVERFLOW`、`APP_DB_POOL_RECYCLE`
+- 默认部门：`APP_DEFAULT_DEPARTMENT`（默认 `default`）
 
 ---
 

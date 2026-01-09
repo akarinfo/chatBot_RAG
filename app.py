@@ -106,7 +106,12 @@ def _weaviate_chunk_count_for_source(source_path: str) -> int | None:
 
 def sidebar_nav(user):
     st.sidebar.header("导航")
-    st.sidebar.caption(f"当前用户：{user.username}" + ("（管理员）" if user.is_admin else ""))
+    dept_label = f" · 部门：{user.department_name}" if user.department_name else ""
+    st.sidebar.caption(
+        f"当前用户：{user.username}"
+        + ("（管理员）" if user.is_admin else "")
+        + dept_label
+    )
     if st.sidebar.button("退出登录", type="secondary"):
         _logout()
 
@@ -235,11 +240,17 @@ def page_users(user):
         username = st.text_input("用户名")
         password = st.text_input("密码（至少 8 位）", type="password")
         is_admin = st.checkbox("设为管理员", value=False)
+        department_name = st.text_input("部门（可选，默认 default）")
         submitted = st.form_submit_button("创建")
     if submitted:
         try:
             s = storage()
-            created = s.create_user(username, password, is_admin=is_admin)
+            created = s.create_user(
+                username,
+                password,
+                is_admin=is_admin,
+                department_name=department_name or None,
+            )
             s.log_audit(user.id, "user.create", created.username, {"is_admin": is_admin})
             st.success("用户已创建")
             st.rerun()
@@ -248,7 +259,14 @@ def page_users(user):
 
     st.subheader("现有用户")
     s = storage()
-    rows = [{"username": u.username, "is_admin": u.is_admin} for u in s.list_users()]
+    rows = [
+        {
+            "username": u.username,
+            "department": u.department_name or "",
+            "is_admin": u.is_admin,
+        }
+        for u in s.list_users()
+    ]
     st.table(rows)
 
 

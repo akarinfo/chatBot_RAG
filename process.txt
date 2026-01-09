@@ -1,0 +1,9 @@
+2026-01-09
+
+- Read git history and existing progresss.txt (note: process.txt was missing).
+- Reviewed current SQLite storage implementation in src/core/db.py for migration feasibility.
+- User requested a feasibility/appropriateness assessment for SQLite -> PostgreSQL migration; no code changes made yet.
+- Implemented PostgreSQL migration baseline with SQLModel + Alembic, added Department model + department_id, and updated user admin UI to capture department.
+- Added postgres service to docker-compose, updated requirements and README docs for DATABASE_URL/migrations/pool settings.
+- Fixed SQLModel Field config (removed nullable when using sa_column) after alembic runtime error.
+- Fixed Alembic migration file quoting that caused a SyntaxError.
