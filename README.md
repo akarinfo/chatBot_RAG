@@ -8,11 +8,11 @@ Minimal Retrieval-Augmented Generation (RAG) chatbot built on the LangChain 1.x 
 
 ```mermaid
 flowchart TD
-    A[Docs in data/] --> B[ingest.py<br/>Markdown header split + recursive chunks]
+    A[Docs in data/] --> B["ingest.py<br>Markdown header split + recursive chunks"]
     B --> C[ModelScope Embedding API]
     C --> D[Weaviate Vector DB RAGChunk]
 
-    E[User Question] --> F[rag_graph.py<br/>retriever.invoke()]
+    E[User Question] --> F["rag_graph.py<br>retriever.invoke()"]
     F --> D
     F --> G[Context + Prompt]
     G --> H[DeepSeek LLM API]
@@ -54,6 +54,31 @@ Ask questions; answers are grounded on the ingested context. If the answer is ou
 ```bash
 streamlit run app.py
 ```
+If you see `streamlit: command not found`, activate the venv first (`source .venv/bin/activate`) or run:
+```bash
+.venv/bin/streamlit run app.py
+```
+
+## Run Agent Chat UI (LangGraph-compatible)
+This repo includes a minimal LangGraph-compatible HTTP API (for Agent Chat UI) at `http://localhost:2024`.
+
+1) Start the API server:
+```bash
+./scripts/run_langgraph_api.sh
+```
+
+2) Create an API key (token) by logging in:
+```bash
+curl -sS -X POST http://localhost:2024/auth/login \
+  -H 'Content-Type: application/json' \
+  -d '{"username":"YOUR_USER","password":"YOUR_PASS"}'
+```
+Copy the returned `api_key`.
+
+3) Run Agent Chat UI (separate Next.js app) and set:
+- `Deployment URL`: `http://localhost:2024`
+- `Assistant / Graph ID`: `agent`
+- `LangSmith API Key`: paste the `api_key` from step 2 (we use it as `x-api-key`)
 
 ## Configuration
 - Use `.env` (see `.env.example`).

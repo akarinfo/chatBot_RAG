@@ -9,14 +9,12 @@ from typing import List
 from dotenv import load_dotenv
 from langchain_core.documents import Document
 from langchain_community.vectorstores import Weaviate
-from langchain_text_splitters import (
-    MarkdownHeaderTextSplitter,
-    RecursiveCharacterTextSplitter,
-)
 
 try:
+    from .chunking import chunk_documents
     from .providers import embeddings_from_env, weaviate_client_from_env
 except ImportError:  # allows `python src/rag/ingest.py`
+    from chunking import chunk_documents
     from providers import embeddings_from_env, weaviate_client_from_env
 
 
@@ -47,22 +45,7 @@ def ingest():
     if not docs:
         raise SystemExit(f"No documents found in {DATA_DIR}")
 
-    # Markdown 先按标题分块，再做递归分块
-    header_splitter = MarkdownHeaderTextSplitter(
-        headers_to_split_on=[("#", "h1"), ("##", "h2"), ("###", "h3")]
-    )
-    splitter = RecursiveCharacterTextSplitter(chunk_size=800, chunk_overlap=120)
-    chunks: List[Document] = []
-    for doc in docs:
-        source = doc.metadata.get("source", "")
-        if source.lower().endswith((".md", ".mdx")):
-            md_docs = header_splitter.split_text(doc.page_content)
-            # Preserve source path on all header-split docs
-            for md_doc in md_docs:
-                md_doc.metadata["source"] = source
-            chunks.extend(splitter.split_documents(md_docs))
-        else:
-            chunks.extend(splitter.split_documents([doc]))
+    chunks = chunk_documents(docs, chunk_size=800, chunk_overlap=120, method="auto")
 
     # 写入 Weaviate（可通过环境变量控制类名与是否重建）
     embeddings = select_embeddings()

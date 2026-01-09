@@ -14,11 +14,11 @@
 
 ```mermaid
 flowchart TD
-    A[用户文档 data/] --> B[ingest.py<br/>Markdown 结构化分块 + 递归分块]
+    A[用户文档 data/] --> B["ingest.py<br>Markdown 结构化分块 + 递归分块"]
     B --> C[ModelScope Embedding API]
     C --> D[Weaviate 向量库 RAGChunk]
 
-    E[用户提问] --> F[rag_graph.py<br/>retriever.invoke()]
+    E[用户提问] --> F["rag_graph.py<br>retriever.invoke()"]
     F --> D
     F --> G[拼接上下文 + Prompt]
     G --> H[DeepSeek LLM API]
@@ -136,12 +136,38 @@ python src/rag/rag_graph.py
 ```bash
 streamlit run app.py
 ```
+如果提示 `streamlit: command not found`，请先激活虚拟环境（`source .venv/bin/activate`），或直接运行：
+```bash
+.venv/bin/streamlit run app.py
+```
 
 你将获得一个网页界面：
 - 左侧栏：上传/删除 `data/` 里的文档，并一键“重新入库（重建向量库）”
 - 主界面：聊天问答，默认会尝试流式输出（边生成边显示）
 
 ---
+
+## 5) 使用 Agent Chat UI（LangGraph 兼容接口）
+
+本项目额外提供了一个“最小可用”的 LangGraph 兼容 HTTP API（用于 Agent Chat UI），默认监听 `http://localhost:2024`。
+
+1) 启动 API：
+```bash
+./scripts/run_langgraph_api.sh
+```
+
+2) 用账号密码换取 `api_key`（作为 `x-api-key`）：
+```bash
+curl -sS -X POST http://localhost:2024/auth/login \
+  -H 'Content-Type: application/json' \
+  -d '{"username":"YOUR_USER","password":"YOUR_PASS"}'
+```
+把返回的 `api_key` 复制出来。
+
+3) 运行 Agent Chat UI（一个独立的 Next.js 项目），并在界面里填：
+- `Deployment URL`：`http://localhost:2024`
+- `Assistant / Graph ID`：`agent`
+- `LangSmith API Key`：粘贴上一步拿到的 `api_key`
 
 ## Weaviate 安装（Docker Compose）
 

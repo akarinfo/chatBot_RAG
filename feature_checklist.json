@@ -1,0 +1,21 @@
+{
+  "streamlit_chat_ui": false,
+  "login_required": false,
+  "admin_user_management": false,
+  "conversation_isolation": false,
+  "user_memory_edit": false,
+  "doc_upload": false,
+  "doc_delete": false,
+  "doc_reindex": false,
+  "chunk_preview": false,
+  "chunk_highlight": false,
+  "audit_log_view": false,
+  "audit_log_export": false,
+  "agent_chat_ui_api": false,
+  "api_token_login": false,
+  "langgraph_runs_stream": false,
+  "weaviate_ingest": false,
+  "weaviate_retrieval": false,
+  "llm_deepseek": false,
+  "embedding_modelscope": false
+}

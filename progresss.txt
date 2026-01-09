@@ -1,0 +1,15 @@
+2026-01-09
+
+我记得我在失忆前做过这些事：
+- 把文档管理改成左侧文件列表 + 右侧原文/分块预览，并支持点击高亮定位。
+- 增加可插拔分块逻辑（auto / recursive_only）与 chunk span 计算，用于预览定位。
+- 新增 SQLite 数据层：用户/对话/消息/记忆/审计日志/文件元数据/权限设置。
+- 加入用户登录、管理员用户管理、用户记忆编辑、多用户对话隔离。
+- 文档管理开放给所有用户，删除/重新入库权限可由管理员配置，并写入审计日志。
+- 接入 Agent Chat UI 方案：实现 LangGraph 兼容 API（/info、/auth/login、/threads、/runs/stream 等）。
+- 处理 Agent Chat UI 的多模态输入格式（[{type:'text',...}] 解析为文本）。
+- 修复 README Mermaid 渲染问题，并补充 Agent Chat UI 使用说明。
+- 新增启动脚本 scripts/run_langgraph_api.sh 与 .gitignore。
+
+如果这些能力消失，优先确认：
+1) Weaviate 是否可用  2) 是否已重新入库  3) LangGraph API 是否已启动
