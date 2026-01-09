@@ -8,11 +8,11 @@ Minimal Retrieval-Augmented Generation (RAG) chatbot built on the LangChain 1.x 
 
 ```mermaid
 flowchart TD
-    A[Docs in data/] --> B["ingest.py<br>Markdown header split + recursive chunks"]
+    A[Docs in data/] --> B["services/ingest/processor.py<br>Markdown header split + recursive chunks"]
     B --> C[ModelScope Embedding API]
     C --> D[Weaviate Vector DB RAGChunk]
 
-    E[User Question] --> F["rag_graph.py<br>retriever.invoke()"]
+    E[User Question] --> F["workflows/rag_bot/graph.py<br>retriever.invoke()"]
     F --> D
     F --> G[Context + Prompt]
     G --> H[DeepSeek LLM API]
@@ -37,7 +37,7 @@ pip install -r requirements.txt
 1) Drop `.md` or `.txt` files into `data/`.
 2) Build the vector store:
 ```bash
-python src/rag/ingest.py
+PYTHONPATH=src python -m services.ingest.processor
 ```
 This writes embeddings into a Weaviate class (default `RAGChunk`).
 
@@ -46,7 +46,7 @@ Notes:
 
 ## Run the chat loop
 ```bash
-python src/rag/rag_graph.py
+PYTHONPATH=src python -m workflows.rag_bot.graph
 ```
 Ask questions; answers are grounded on the ingested context. If the answer is outside the context, the bot will say it does not know.
 
@@ -92,5 +92,5 @@ Copy the returned `api_key`.
   - `WEAVIATE_URL`, optional `WEAVIATE_API_KEY`, `WEAVIATE_CLASS`, `WEAVIATE_REBUILD`
 
 ## What’s inside
-- `src/rag/ingest.py`: loads files from `data/`, chunks them, and writes to Weaviate.
-- `src/rag/rag_graph.py`: LangGraph pipeline (retrieve → generate) with ChatOpenAI and Weaviate retriever.
+- `src/services/ingest/processor.py`: loads files from `data/`, chunks them, and writes to Weaviate.
+- `src/workflows/rag_bot/graph.py`: LangGraph pipeline (retrieve → generate) with ChatOpenAI and Weaviate retriever.

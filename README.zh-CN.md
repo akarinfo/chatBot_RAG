@@ -14,11 +14,11 @@
 
 ```mermaid
 flowchart TD
-    A[用户文档 data/] --> B["ingest.py<br>Markdown 结构化分块 + 递归分块"]
+    A[用户文档 data/] --> B["services/ingest/processor.py<br>Markdown 结构化分块 + 递归分块"]
     B --> C[ModelScope Embedding API]
     C --> D[Weaviate 向量库 RAGChunk]
 
-    E[用户提问] --> F["rag_graph.py<br>retriever.invoke()"]
+    E[用户提问] --> F["workflows/rag_bot/graph.py<br>retriever.invoke()"]
     F --> D
     F --> G[拼接上下文 + Prompt]
     G --> H[DeepSeek LLM API]
@@ -34,8 +34,8 @@ flowchart TD
 
 - `data/`：你的知识库源文件（当前示例支持 `.md/.txt/.mdx`）
 - `storage/chroma/`：已不再使用（当前版本改为 Weaviate 服务）
-- `src/rag/ingest.py`：入库脚本（加载 → 切分 → 嵌入 → 写入向量库）
-- `src/rag/rag_graph.py`：问答脚本（LangGraph：retrieve → generate）
+- `src/services/ingest/processor.py`：入库脚本（加载 → 切分 → 嵌入 → 写入向量库）
+- `src/workflows/rag_bot/graph.py`：问答脚本（LangGraph：retrieve → generate）
 
 ---
 
@@ -100,7 +100,7 @@ cp .env.example .env
 
 运行：
 ```bash
-python src/rag/ingest.py
+PYTHONPATH=src python -m services.ingest.processor
 ```
 
 它会做这些事：
@@ -117,7 +117,7 @@ python src/rag/ingest.py
 
 运行：
 ```bash
-python src/rag/rag_graph.py
+PYTHONPATH=src python -m workflows.rag_bot.graph
 ```
 
 交互示例：
@@ -193,7 +193,7 @@ curl http://localhost:8080/v1/.well-known/ready
 ## 常见问题（Troubleshooting）
 
 1) **`Vector store not found ... Run ingest first`**
-- 你还没运行 `python src/rag/ingest.py`，或者 `storage/chroma/` 被删了。
+- 你还没运行 `PYTHONPATH=src python -m services.ingest.processor`，或者 `storage/chroma/` 被删了。
 
 2) **OpenAI 鉴权失败 / 401**
 - 如果你用的是 DeepSeek：检查 `.env` 里 `DEEPSEEK_API_KEY` 是否正确
@@ -206,7 +206,7 @@ curl http://localhost:8080/v1/.well-known/ready
 - 文档如果是扫描 PDF/图片，需先 OCR 成文本再入库
 
 4) **想支持 PDF/Word/网页**
-- 当前 `ingest.py` 只读取纯文本/Markdown。
+- 当前 `services/ingest/processor.py` 只读取纯文本/Markdown。
 - 下一步通常是引入 LangChain 的 loader（例如 PDF loader），把它们转成 `Document` 后复用现有切分与入库逻辑。
 
 ---

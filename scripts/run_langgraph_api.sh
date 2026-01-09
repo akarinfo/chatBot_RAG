@@ -11,5 +11,4 @@ if [[ ! -x ".venv/bin/python" ]]; then
 fi
 
 export PYTHONPATH="src"
-exec .venv/bin/uvicorn rag.lg_api:app --host 0.0.0.0 --port 2024 --reload
-
+exec .venv/bin/uvicorn interfaces.api.server:app --host 0.0.0.0 --port 2024 --reload

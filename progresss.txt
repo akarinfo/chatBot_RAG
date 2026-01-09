@@ -10,6 +10,9 @@
 - 处理 Agent Chat UI 的多模态输入格式（[{type:'text',...}] 解析为文本）。
 - 修复 README Mermaid 渲染问题，并补充 Agent Chat UI 使用说明。
 - 新增启动脚本 scripts/run_langgraph_api.sh 与 .gitignore。
+- 完成 DDD 风格目录重构：拆出 core/services/workflows/interfaces 四层。
+- RAG 逻辑拆分为 state / nodes / graph，API 与 Streamlit 改为依赖 workflows 接口。
+- providers/db/ingest/chunking/kb 等模块已移动到新路径，并更新文档与启动脚本。
 
 如果这些能力消失，优先确认：
 1) Weaviate 是否可用  2) 是否已重新入库  3) LangGraph API 是否已启动

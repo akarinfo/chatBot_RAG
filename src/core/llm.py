@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import os
 
-import weaviate
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 
 
@@ -44,12 +43,3 @@ def llm_from_env():
         temperature=temperature,
     )
 
-
-def weaviate_client_from_env():
-    # Weaviate 客户端（可选 API Key）
-    url = os.getenv("WEAVIATE_URL", "http://localhost:8080")
-    api_key = os.getenv("WEAVIATE_API_KEY")
-    if api_key:
-        auth = weaviate.AuthApiKey(api_key=api_key)
-        return weaviate.Client(url=url, auth_client_secret=auth)
-    return weaviate.Client(url=url)

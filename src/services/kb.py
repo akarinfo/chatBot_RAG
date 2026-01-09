@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import os
 from pathlib import Path
-from typing import Iterable, List
+from typing import List
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -49,10 +49,7 @@ def delete_kb_file(name: str) -> None:
 
 def clear_vectorstore() -> None:
     # 删除 Weaviate 指定类（用于重建索引）
-    try:
-        from .providers import weaviate_client_from_env
-    except ImportError:
-        from providers import weaviate_client_from_env
+    from core.vectordb import weaviate_client_from_env
 
     client = weaviate_client_from_env()
     class_name = os.getenv("WEAVIATE_CLASS", "RAGChunk")

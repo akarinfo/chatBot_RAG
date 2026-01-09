@@ -11,12 +11,12 @@ from langchain_core.messages import AIMessage, HumanMessage
 # 允许从项目根目录直接运行 app.py
 sys.path.insert(0, str(Path(__file__).resolve().parent / "src"))
 
-from rag.chunking import chunk_file  # noqa: E402
-from rag.db import storage  # noqa: E402
-from rag.ingest import ingest  # noqa: E402
-from rag.kb import delete_kb_file, list_kb_files, save_upload  # noqa: E402
-from rag.providers import weaviate_client_from_env  # noqa: E402
-from rag.rag_graph import build_graph  # noqa: E402
+from core.db import storage  # noqa: E402
+from core.vectordb import weaviate_client_from_env  # noqa: E402
+from services.ingest.chunking import chunk_file  # noqa: E402
+from services.ingest.processor import ingest  # noqa: E402
+from services.kb import delete_kb_file, list_kb_files, save_upload  # noqa: E402
+from workflows.rag_bot.graph import build_graph  # noqa: E402
 
 
 st.set_page_config(page_title="RAG 知识库问答", layout="wide")

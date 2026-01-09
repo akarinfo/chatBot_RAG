@@ -13,9 +13,10 @@
 ## 目录结构
 
 - `app.py`：Streamlit Web 应用（聊天 + 文档管理）
-- `src/rag/ingest.py`：入库脚本（Markdown 结构化分块 + 向量写入 Weaviate）
-- `src/rag/rag_graph.py`：RAG 逻辑（检索 → 生成）
-- `src/rag/providers.py`：统一管理 LLM/Embedding/Weaviate 客户端
+- `src/services/ingest/processor.py`：入库脚本（Markdown 结构化分块 + 向量写入 Weaviate）
+- `src/workflows/rag_bot/graph.py`：RAG 逻辑（检索 → 生成）
+- `src/core/llm.py`：统一管理 LLM/Embedding
+- `src/core/vectordb.py`：Weaviate 客户端与检索器
 - `data/`：知识库原始文档
 - `docker-compose.yml`：Weaviate 本地服务
 - `.env`：你的 API key（不要提交）
@@ -47,7 +48,7 @@ WEAVIATE_URL=http://localhost:8081
 
 3) 入库
 ```bash
-python src/rag/ingest.py
+PYTHONPATH=src python -m services.ingest.processor
 ```
 
 4) 启动 Web
@@ -60,7 +61,7 @@ streamlit run app.py
 ## 核心流程说明
 
 ### 1. 入库（ingest）
-入口：`src/rag/ingest.py`
+入口：`src/services/ingest/processor.py`
 
 流程：
 1) 读取 `data/` 下 `.md/.mdx/.txt`
@@ -71,7 +72,7 @@ streamlit run app.py
 > 注意：Embedding 模型一旦入库确定，检索时必须使用同一模型。
 
 ### 2. 检索 + 生成（RAG）
-入口：`src/rag/rag_graph.py`
+入口：`src/workflows/rag_bot/graph.py`
 
 流程：
 1) 通过 Weaviate 检索相关 chunk（MMR 策略）
@@ -92,11 +93,11 @@ streamlit run app.py
 
 ```mermaid
 flowchart TD
-    A[用户文档 data/] --> B[ingest.py<br/>Markdown 结构化分块 + 递归分块]
+    A[用户文档 data/] --> B[services/ingest/processor.py<br/>Markdown 结构化分块 + 递归分块]
     B --> C[ModelScope Embedding API]
     C --> D[Weaviate 向量库 RAGChunk]
 
-    E[用户提问] --> F[rag_graph.py<br/>Retriever.invoke()]
+    E[用户提问] --> F[workflows/rag_bot/graph.py<br/>Retriever.invoke()]
     F --> D
     F --> G[拼接上下文 + Prompt]
     G --> H[DeepSeek LLM API]
@@ -120,14 +121,13 @@ flowchart TD
 
 3) **回答质量差**
 - 确保文档内容里真的包含答案
-- 调整分块大小（`ingest.py`）
-- 增加 `k` 值（`rag_graph.py` 中 `search_kwargs`）
+- 调整分块大小（`services/ingest/processor.py`）
+- 增加 `k` 值（`core/vectordb.py` 中 `search_kwargs`）
 
 ---
 
 ## 开发建议
 
-- 新增文档后，必须重新运行 `python src/rag/ingest.py`
+- 新增文档后，必须重新运行 `PYTHONPATH=src python -m services.ingest.processor`
 - `.env` 不要提交到 Git
 - 如果需要多租户/多知识库，可扩展 Weaviate class 或加命名空间
-

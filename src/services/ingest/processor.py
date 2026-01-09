@@ -6,21 +6,18 @@ import os
 from pathlib import Path
 from typing import List
 
-from dotenv import load_dotenv
 from langchain_core.documents import Document
 from langchain_community.vectorstores import Weaviate
 
-try:
-    from .chunking import chunk_documents
-    from .providers import embeddings_from_env, weaviate_client_from_env
-except ImportError:  # allows `python src/rag/ingest.py`
-    from chunking import chunk_documents
-    from providers import embeddings_from_env, weaviate_client_from_env
+from core.config import load_env
+from core.llm import embeddings_from_env
+from core.vectordb import weaviate_client_from_env
+from .chunking import chunk_documents
 
 
-DATA_DIR = Path(__file__).resolve().parent.parent.parent / "data"
+DATA_DIR = Path(__file__).resolve().parent.parent.parent.parent / "data"
 
-load_dotenv()
+load_env()
 
 
 def load_documents(data_dir: Path) -> List[Document]:
